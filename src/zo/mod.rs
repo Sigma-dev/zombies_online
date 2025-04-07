@@ -1,5 +1,6 @@
 use bevy::prelude::*;
-use car::{spawn_car, ZOCarPlugin};
+use bevy_steam_p2p::{FilePath, SteamP2PClient};
+use car::ZOCarPlugin;
 use lobby::ZOLobbyPlugin;
 use world::spawn_world;
 
@@ -7,10 +8,7 @@ mod car;
 mod lobby;
 mod world;
 
-use crate::{
-    camera_follow::{CameraFollow, CameraFollowPlugin},
-    car::CarPlugin,
-};
+use crate::{camera_follow::CameraFollowPlugin, car::CarPlugin};
 
 pub struct ZOPlugin;
 
@@ -21,17 +19,14 @@ impl Plugin for ZOPlugin {
     }
 }
 
-pub fn spawn_everything(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let car = spawn_car(&mut commands, &asset_server);
-
-    commands.spawn((
-        Camera2d,
-        Projection::from(OrthographicProjection {
-            scale: 0.5,
-            ..OrthographicProjection::default_2d()
-        }),
-        CameraFollow::new(car, 4.0),
-    ));
+pub fn spawn_everything(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut client: ResMut<SteamP2PClient>,
+) {
+    client
+        .instantiate(FilePath::new("Player"), None, Vec3::ZERO)
+        .expect("Couldn't spawn player");
 
     spawn_world(&mut commands, &asset_server);
 }

@@ -1,7 +1,11 @@
 use avian2d::prelude::{Collider, ExternalForce, Mass, RigidBody};
 use bevy::prelude::*;
+use bevy_steam_p2p::{NetworkIdentity, SteamId};
 
-use crate::car::{tire::Tire, Car};
+use crate::{
+    camera_follow::CameraFollow,
+    car::{tire::Tire, Car},
+};
 
 const TIRE_GRIP: f32 = 0.7;
 
@@ -13,11 +17,16 @@ impl Plugin for ZOCarPlugin {
     }
 }
 
-pub fn spawn_car(commands: &mut Commands, asset_server: &AssetServer) -> Entity {
+pub fn spawn_car(
+    commands: &mut Commands,
+    asset_server: &AssetServer,
+    network_identity: NetworkIdentity,
+    id: SteamId,
+) {
     let width = 16.;
     let length = 32.;
 
-    commands
+    let car = commands
         .spawn((
             Car::new(4000., 4000.),
             RigidBody::Dynamic,
@@ -38,7 +47,18 @@ pub fn spawn_car(commands: &mut Commands, asset_server: &AssetServer) -> Entity 
                 ));
             }
         })
-        .id()
+        .id();
+
+    if network_identity.owner_id == id {
+        commands.spawn((
+            Camera2d,
+            Projection::from(OrthographicProjection {
+                scale: 0.5,
+                ..OrthographicProjection::default_2d()
+            }),
+            CameraFollow::new(car, 4.0),
+        ));
+    }
 }
 
 fn turning(keys: Res<ButtonInput<KeyCode>>, mut tires: Query<(&mut Transform, &Tire)>) {
