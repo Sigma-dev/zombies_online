@@ -1,6 +1,6 @@
 use avian2d::prelude::{Collider, ExternalForce, Mass, RigidBody};
 use bevy::prelude::*;
-use bevy_steam_p2p::{NetworkIdentity, SteamId};
+use bevy_steam_p2p::{networked_transform::NetworkedTransform, NetworkIdentity, SteamId};
 
 use crate::{
     camera_follow::CameraFollow,
@@ -34,6 +34,8 @@ pub fn spawn_car(
             ExternalForce::default().with_persistence(false),
             Collider::rectangle(width, length),
             Sprite::from_image(asset_server.load("sprites/car.png")),
+            network_identity.clone(),
+            NetworkedTransform::new(true, true, false),
         ))
         .with_children(|children| {
             for i in 0..4 {
