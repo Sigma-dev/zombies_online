@@ -1,5 +1,6 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy_steam_p2p::SteamP2PPlugin;
 use zo::ZOPlugin;
 
 mod camera_follow;
@@ -14,6 +15,6 @@ fn main() {
             PhysicsDebugPlugin::default(),
         ))
         .insert_resource(Gravity::ZERO)
-        .add_plugins(ZOPlugin)
+        .add_plugins((SteamP2PPlugin, ZOPlugin))
         .run();
 }

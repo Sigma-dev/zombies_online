@@ -1,8 +1,10 @@
 use bevy::prelude::*;
 use car::{spawn_car, ZOCarPlugin};
+use lobby::ZOLobbyPlugin;
 use world::spawn_world;
 
 mod car;
+mod lobby;
 mod world;
 
 use crate::{
@@ -15,12 +17,11 @@ pub struct ZOPlugin;
 impl Plugin for ZOPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((CarPlugin, CameraFollowPlugin))
-            .add_plugins(ZOCarPlugin)
-            .add_systems(Startup, setup);
+            .add_plugins((ZOCarPlugin, ZOLobbyPlugin));
     }
 }
 
-pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn spawn_everything(mut commands: Commands, asset_server: Res<AssetServer>) {
     let car = spawn_car(&mut commands, &asset_server);
 
     commands.spawn((
