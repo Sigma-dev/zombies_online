@@ -34,7 +34,7 @@ fn handle_spawning_and_despawning(
     let max_zombies = 20;
     let min_range = 300.;
     let variation = 200.;
-    let zombie_size = 10.;
+    let zombie_size = 2.;
     let mut zombies_in_range = HashSet::new();
 
     for player in players.iter() {
@@ -54,14 +54,15 @@ fn handle_spawning_and_despawning(
         let position = player.translation.xy();
         let random_offset = random_point_in_donut(min_range, min_range + variation);
         let sample_point = position + random_offset;
-        let Some(_) = spatial.cast_shape(
+        let shape_cast = spatial.cast_shape(
             &Collider::circle(zombie_size),
             sample_point,
             0.,
             Dir2::new(Vec2::ONE).unwrap(),
-            &ShapeCastConfig::DEFAULT,
+            &ShapeCastConfig::from_max_distance(0.),
             &SpatialQueryFilter::DEFAULT,
-        ) else {
+        );
+        if shape_cast.is_some() {
             continue;
         };
         let _ = client.instantiate(FilePath("Zombie".to_owned()), None, sample_point.extend(0.));
@@ -81,7 +82,7 @@ pub fn spawn_zombie(
     network_identity: NetworkIdentity,
     texture_atlas_layouts: &mut Assets<TextureAtlasLayout>,
 ) {
-    let layout = TextureAtlasLayout::from_grid(UVec2::splat(8), 3, 1, None, None);
+    let layout = TextureAtlasLayout::from_grid(UVec2::splat(9), 3, 1, None, None);
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
 
     commands.spawn((
