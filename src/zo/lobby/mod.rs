@@ -3,7 +3,10 @@ use bevy_steam_p2p::{LobbyJoined, SteamP2PClient, UnhandledInstantiation};
 
 use crate::zo::car::spawn_car;
 
-use super::spawn_everything;
+use super::{
+    spawn_everything,
+    zombies::{spawn_zombie, Zombie},
+};
 
 pub struct ZOLobbyPlugin;
 impl Plugin for ZOLobbyPlugin {
@@ -38,17 +41,31 @@ fn handle_unhandled_instantiations(
     mut evs_unhandled: EventReader<UnhandledInstantiation>,
     asset_server: ResMut<AssetServer>,
     client: ResMut<SteamP2PClient>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     let id = client.id;
     for UnhandledInstantiation(data) in evs_unhandled.read() {
-        if data.network_identity.instantiation_path == "Player" {
-            println!("Instantiated Player");
-            spawn_car(
+        match data.network_identity.instantiation_path.0.as_str() {
+            "Player" => {
+                println!("Instantiated Player");
+                spawn_car(
+                    &mut commands,
+                    &asset_server,
+                    data.network_identity.clone(),
+                    id,
+                );
+            }
+            "Zombie" => spawn_zombie(
+                data.starting_pos.xy(),
                 &mut commands,
                 &asset_server,
                 data.network_identity.clone(),
-                id,
-            );
+                &mut texture_atlas_layouts,
+            ),
+            _ => {
+                println!("No valid instantiation candidate found");
+            }
         }
+        if data.network_identity.instantiation_path == "Player" {}
     }
 }

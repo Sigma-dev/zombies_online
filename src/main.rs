@@ -5,6 +5,7 @@ use zo::ZOPlugin;
 
 mod camera_follow;
 mod car;
+mod rng;
 mod zo;
 
 fn main() {

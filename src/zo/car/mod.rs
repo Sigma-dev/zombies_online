@@ -7,6 +7,8 @@ use crate::{
     car::{tire::Tire, Car},
 };
 
+use super::Player;
+
 const TIRE_GRIP: f32 = 0.7;
 
 pub struct ZOCarPlugin;
@@ -28,6 +30,7 @@ pub fn spawn_car(
 
     let car = commands
         .spawn((
+            Player,
             Car::new(4000., 4000.),
             RigidBody::Dynamic,
             Mass(1.),
