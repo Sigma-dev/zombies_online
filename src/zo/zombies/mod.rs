@@ -1,11 +1,11 @@
 use core::f32;
 use std::time::Duration;
 
-use avian2d::{
-    parry::transformation::utils::transform,
-    prelude::{Collider, ShapeCastConfig, SpatialQuery, SpatialQueryFilter},
+use avian2d::prelude::{
+    Collider, ExternalForce, LinearVelocity, Mass, RigidBody, ShapeCastConfig, SpatialQuery,
+    SpatialQueryFilter,
 };
-use bevy::{prelude::*, time::common_conditions::on_timer, transform, utils::HashSet};
+use bevy::{prelude::*, time::common_conditions::on_timer, utils::HashSet};
 use bevy_steam_p2p::{
     networked_events::{event::Networked, register::NetworkedEvents},
     serde::Serialize,
@@ -27,6 +27,7 @@ impl Plugin for ZoZombiesPlugin {
                 zombie_agro.run_if(on_timer(Duration::from_millis(500))),
                 handle_zombie_agro_change,
                 zombie_movement,
+                zombie_drag,
             ),
         );
     }
@@ -161,10 +162,10 @@ fn handle_zombie_agro_change(
 
 fn zombie_movement(
     time: Res<Time>,
-    mut zombies: Query<(Entity, &Zombie)>,
+    mut zombies: Query<(Entity, &Zombie, &mut ExternalForce)>,
     mut transforms: Query<&mut Transform>,
 ) {
-    for (entity, zombie) in zombies.iter_mut() {
+    for (entity, zombie, mut force) in zombies.iter_mut() {
         let Some(target) = zombie.target else {
             continue;
         };
@@ -174,9 +175,19 @@ fn zombie_movement(
         let Ok(mut transform) = transforms.get_mut(entity) else {
             continue;
         };
-        let dir = (target_position - transform.translation).normalize();
-        transform.translation += dir * zombie.speed * time.delta_secs();
+        let dir = (target_position - transform.translation).normalize().xy();
+        force.apply_force(dir * zombie.speed * time.delta_secs());
         look_at_2d(&mut transform, target_position.xy());
+    }
+}
+
+fn zombie_drag(
+    time: Res<Time>,
+    mut zombies: Query<(&LinearVelocity, &mut ExternalForce), With<Zombie>>,
+) {
+    let drag = 100.;
+    for (velocity, mut force) in zombies.iter_mut() {
+        force.apply_force(-**velocity * drag * time.delta_secs());
     }
 }
 
@@ -199,10 +210,13 @@ pub fn spawn_zombie(
     commands.spawn((
         network_identity,
         Zombie {
-            speed: 20.,
+            speed: 20000.,
             target: None,
         },
         Transform::from_translation(position.extend(0.)),
+        RigidBody::Dynamic,
+        Mass(1.),
+        Collider::circle(4.),
         Sprite::from_atlas_image(
             asset_server.load("sprites/zombies/zombies.png"),
             TextureAtlas {
@@ -210,5 +224,6 @@ pub fn spawn_zombie(
                 index: 0,
             },
         ),
+        ExternalForce::default().with_persistence(false),
     ));
 }
