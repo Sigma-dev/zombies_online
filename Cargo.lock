@@ -1644,7 +1644,7 @@ dependencies = [
 [[package]]
 name = "bevy_steam_p2p"
 version = "0.1.0"
-source = "git+https://github.com/Sigma-dev/bevy_steam_p2p?branch=feat%2Fgeneric-events-sockets#f60223c470aec5d817c602db04c99d86ecb067a8"
+source = "git+https://github.com/Sigma-dev/bevy_steam_p2p?branch=feat%2Fgeneric-events-sockets#8cad88a3d8fcb051cc83c5f04e7f4108144d0159"
 dependencies = [
  "bevy 0.15.3",
  "bevy-steamworks",
@@ -3810,9 +3810,9 @@ checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
 name = "miniz_oxide"
-version = "0.8.7"
+version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff70ce3e48ae43fa075863cef62e8b43b71a4f2382229920e0df362592919430"
+checksum = "3be647b768db090acb35d5ec5db2b0e1f1de11133ca123b9eacf5137868f892a"
 dependencies = [
  "adler2",
  "simd-adler32",
@@ -6863,9 +6863,9 @@ dependencies = [
 
 [[package]]
 name = "winnow"
-version = "0.7.4"
+version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e97b544156e9bebe1a0ffbc03484fc1ffe3100cbce3ffb17eac35f7cdd7ab36"
+checksum = "63d3fcd9bba44b03821e7d699eeee959f3126dcc4aa8e4ae18ec617c2a5cea10"
 dependencies = [
  "memchr",
 ]
@@ -7082,5 +7082,6 @@ dependencies = [
  "bevy_steam_p2p",
  "log",
  "rand 0.9.0",
+ "serde",
  "tracing",
 ]

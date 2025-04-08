@@ -1,8 +1,17 @@
+use core::f32;
 use std::time::Duration;
 
-use avian2d::prelude::{Collider, ShapeCastConfig, SpatialQuery, SpatialQueryFilter};
-use bevy::{prelude::*, time::common_conditions::on_timer, utils::HashSet};
-use bevy_steam_p2p::{FilePath, NetworkIdentity, SteamP2PClient};
+use avian2d::{
+    parry::transformation::utils::transform,
+    prelude::{Collider, ShapeCastConfig, SpatialQuery, SpatialQueryFilter},
+};
+use bevy::{prelude::*, time::common_conditions::on_timer, transform, utils::HashSet};
+use bevy_steam_p2p::{
+    networked_events::{event::Networked, register::NetworkedEvents},
+    serde::Serialize,
+    FilePath, NetworkId, NetworkIdentity, SteamP2PClient,
+};
+use serde::Deserialize;
 
 use crate::rng::random_point_in_donut;
 
@@ -11,15 +20,29 @@ use super::Player;
 pub struct ZoZombiesPlugin;
 impl Plugin for ZoZombiesPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
+        app.add_networked_event::<ZombieAgroChange>().add_systems(
             Update,
-            handle_spawning_and_despawning.run_if(on_timer(Duration::from_millis(100))),
+            (
+                handle_spawning_and_despawning.run_if(on_timer(Duration::from_millis(100))),
+                zombie_agro.run_if(on_timer(Duration::from_millis(500))),
+                handle_zombie_agro_change,
+                zombie_movement,
+            ),
         );
     }
 }
 
 #[derive(Component)]
-pub struct Zombie;
+pub struct Zombie {
+    speed: f32,
+    target: Option<Entity>,
+}
+
+#[derive(Event, Serialize, Clone, Deserialize)]
+pub struct ZombieAgroChange {
+    zombie_identity: NetworkId,
+    target_identity: NetworkId,
+}
 
 fn handle_spawning_and_despawning(
     mut commands: Commands,
@@ -75,6 +98,94 @@ fn handle_spawning_and_despawning(
     }
 }
 
+fn zombie_agro(
+    mut agro_w: EventWriter<Networked<ZombieAgroChange>>,
+    zombies: Query<(&NetworkIdentity, &Transform, &Zombie)>,
+    players: Query<(Entity, &NetworkIdentity, &Transform), With<Player>>,
+) {
+    let agro_dist = 100.;
+
+    for (zombie_identity, transform, zombie) in zombies.iter() {
+        let mut closest: Option<(f32, Entity, NetworkId)> = None;
+        for (player, player_identity, player_transform) in players.iter() {
+            let dist = transform.translation.distance(player_transform.translation);
+            match &closest {
+                Some((best_dist, _, _)) if dist < *best_dist => {
+                    closest = Some((dist, player, player_identity.id.clone()));
+                }
+                None => {
+                    closest = Some((dist, player, player_identity.id.clone()));
+                }
+                _ => {}
+            }
+        }
+        let Some(best) = closest else {
+            continue;
+        };
+        if zombie.target == Some(best.1) {
+            continue;
+        }
+        if best.0 < agro_dist {
+            agro_w.send(Networked::new(ZombieAgroChange {
+                zombie_identity: zombie_identity.id.clone(),
+                target_identity: best.2,
+            }));
+        }
+    }
+}
+
+fn handle_zombie_agro_change(
+    mut agro_r: EventReader<ZombieAgroChange>,
+    identities: Query<(Entity, &NetworkIdentity)>,
+    mut zombies: Query<&mut Zombie>,
+) {
+    for agro in agro_r.read() {
+        let Some((zombie_entity, _)) = identities
+            .iter()
+            .find(|(_, i)| i.id == agro.zombie_identity)
+        else {
+            return;
+        };
+        let Some((target, _)) = identities
+            .iter()
+            .find(|(_, i)| i.id == agro.target_identity)
+        else {
+            return;
+        };
+        let Ok(mut zombie) = zombies.get_mut(zombie_entity) else {
+            return;
+        };
+        zombie.target = Some(target);
+    }
+}
+
+fn zombie_movement(
+    time: Res<Time>,
+    mut zombies: Query<(Entity, &Zombie)>,
+    mut transforms: Query<&mut Transform>,
+) {
+    for (entity, zombie) in zombies.iter_mut() {
+        let Some(target) = zombie.target else {
+            continue;
+        };
+        let Ok(target_position) = transforms.get_mut(target).map(|t| t.translation) else {
+            continue;
+        };
+        let Ok(mut transform) = transforms.get_mut(entity) else {
+            continue;
+        };
+        let dir = (target_position - transform.translation).normalize();
+        transform.translation += dir * zombie.speed * time.delta_secs();
+        look_at_2d(&mut transform, target_position.xy());
+    }
+}
+
+pub fn look_at_2d(transform: &mut Transform, target: Vec2) {
+    let direction = target - transform.translation.truncate();
+    let angle = direction.y.atan2(direction.x) - std::f32::consts::FRAC_PI_2;
+    transform.rotation = Quat::from_rotation_z(angle);
+}
+
 pub fn spawn_zombie(
     position: Vec2,
     commands: &mut Commands,
@@ -87,7 +198,10 @@ pub fn spawn_zombie(
 
     commands.spawn((
         network_identity,
-        Zombie,
+        Zombie {
+            speed: 20.,
+            target: None,
+        },
         Transform::from_translation(position.extend(0.)),
         Sprite::from_atlas_image(
             asset_server.load("sprites/zombies/zombies.png"),

@@ -7,6 +7,7 @@ edition = "2021"
 avian2d = "0.2.1"
 bevy = "0.15"
 bevy_steam_p2p = { git = "https://github.com/Sigma-dev/bevy_steam_p2p", branch = "feat/generic-events-sockets" }
+serde = "1.0.209"
 # Set max log levels. This helps avoid unwanted low-severity log spam, which can affect performance.
 log = { version = "0.4", features = [
     "max_level_debug",
