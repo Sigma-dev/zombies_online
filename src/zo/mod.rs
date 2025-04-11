@@ -1,11 +1,13 @@
 use bevy::prelude::*;
 use bevy_steam_p2p::{FilePath, SteamP2PClient};
 use car::ZOCarPlugin;
+use health::ZOHealthPlugin;
 use lobby::ZOLobbyPlugin;
 use world::spawn_world;
-use zombies::ZoZombiesPlugin;
+use zombies::ZOZombiesPlugin;
 
 mod car;
+mod health;
 mod lobby;
 mod world;
 mod zombies;
@@ -17,7 +19,7 @@ pub struct ZOPlugin;
 impl Plugin for ZOPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((CarPlugin, CameraFollowPlugin))
-            .add_plugins((ZOCarPlugin, ZOLobbyPlugin, ZoZombiesPlugin));
+            .add_plugins((ZOCarPlugin, ZOLobbyPlugin, ZOZombiesPlugin, ZOHealthPlugin));
     }
 }
 

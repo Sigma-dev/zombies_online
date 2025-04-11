@@ -1,13 +1,14 @@
-use avian2d::prelude::{Collider, ExternalForce, Mass, RigidBody};
+use avian2d::prelude::{Collider, Collision, ExternalForce, LinearVelocity, Mass, RigidBody};
 use bevy::prelude::*;
 use bevy_steam_p2p::{networked_transform::NetworkedTransform, NetworkIdentity, SteamId};
 
 use crate::{
     camera_follow::CameraFollow,
     car::{tire::Tire, Car},
+    utils::{query_double, query_double_mut},
 };
 
-use super::Player;
+use super::{health::Health, zombies::Zombie, Player};
 
 const TIRE_GRIP: f32 = 0.7;
 
@@ -15,7 +16,7 @@ pub struct ZOCarPlugin;
 
 impl Plugin for ZOCarPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (turning, drift));
+        app.add_systems(Update, (turning, drift, handle_collisions));
     }
 }
 
@@ -32,6 +33,7 @@ pub fn spawn_car(
         .spawn((
             Player,
             Car::new(4000., 4000.),
+            Transform::from_translation(Vec3::Z),
             RigidBody::Dynamic,
             Mass(1.),
             ExternalForce::default().with_persistence(false),
@@ -87,9 +89,37 @@ fn turning(keys: Res<ButtonInput<KeyCode>>, mut tires: Query<(&mut Transform, &T
 fn drift(keys: Res<ButtonInput<KeyCode>>, mut tires: Query<&mut Tire>) {
     for mut tire in tires.iter_mut() {
         if keys.pressed(KeyCode::ShiftLeft) {
-            tire.grip = 0.4
+            tire.grip = 0.2
         } else {
             tire.grip = TIRE_GRIP;
+        }
+    }
+}
+
+fn handle_collisions(
+    mut collision_event_reader: EventReader<Collision>,
+    mut cars: Query<(Entity, &Transform, &LinearVelocity), With<Car>>,
+    mut zombies: Query<(Entity, &Transform, &mut Health), With<Zombie>>,
+) {
+    let minimum_velocity = 100.;
+
+    for Collision(contacts) in collision_event_reader.read() {
+        let Some((
+            (car, car_transform, car_velocity),
+            (zombie, zombie_transform, mut zombie_health),
+        )) = query_double_mut(&mut cars, &mut zombies, contacts.entity1, contacts.entity2)
+        else {
+            continue;
+        };
+        if !contacts.collision_started() {
+            return;
+        }
+        let force_dir = (zombie_transform.translation - car_transform.translation)
+            .normalize()
+            .xy();
+        let shared_velocity = car_velocity.dot(force_dir);
+        if shared_velocity > minimum_velocity {
+            zombie_health.hurt(100);
         }
     }
 }

@@ -1,9 +1,12 @@
 use core::f32;
 use std::time::Duration;
 
-use avian2d::prelude::{
-    Collider, ExternalForce, LinearVelocity, Mass, RigidBody, ShapeCastConfig, SpatialQuery,
-    SpatialQueryFilter,
+use avian2d::{
+    math::PI,
+    prelude::{
+        Collider, ExternalForce, LinearVelocity, Mass, RigidBody, ShapeCastConfig, SpatialQuery,
+        SpatialQueryFilter,
+    },
 };
 use bevy::{prelude::*, time::common_conditions::on_timer, utils::HashSet};
 use bevy_steam_p2p::{
@@ -13,12 +16,15 @@ use bevy_steam_p2p::{
 };
 use serde::Deserialize;
 
-use crate::rng::random_point_in_donut;
+use crate::rng::{random_float, random_point_in_donut};
 
-use super::Player;
+use super::{
+    health::{Dead, Health},
+    Player,
+};
 
-pub struct ZoZombiesPlugin;
-impl Plugin for ZoZombiesPlugin {
+pub struct ZOZombiesPlugin;
+impl Plugin for ZOZombiesPlugin {
     fn build(&self, app: &mut App) {
         app.add_networked_event::<ZombieAgroChange>().add_systems(
             Update,
@@ -28,6 +34,7 @@ impl Plugin for ZoZombiesPlugin {
                 handle_zombie_agro_change,
                 zombie_movement,
                 zombie_drag,
+                handle_zombie_death,
             ),
         );
     }
@@ -56,8 +63,8 @@ fn handle_spawning_and_despawning(
         return;
     }
     let max_zombies = 20;
-    let min_range = 300.;
-    let variation = 200.;
+    let min_range = 400.;
+    let variation = 300.;
     let zombie_size = 2.;
     let mut zombies_in_range = HashSet::new();
 
@@ -213,9 +220,10 @@ pub fn spawn_zombie(
             speed: 20000.,
             target: None,
         },
-        Transform::from_translation(position.extend(0.)),
+        Transform::from_translation(position.extend(0.))
+            .with_rotation(Quat::from_rotation_z(random_float(0.0..(2. * PI)))),
         RigidBody::Dynamic,
-        Mass(1.),
+        Mass(0.1),
         Collider::circle(4.),
         Sprite::from_atlas_image(
             asset_server.load("sprites/zombies/zombies.png"),
@@ -225,5 +233,20 @@ pub fn spawn_zombie(
             },
         ),
         ExternalForce::default().with_persistence(false),
+        Health::new(100, true),
     ));
+}
+
+fn handle_zombie_death(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    zombies: Query<&Transform, (With<Zombie>, With<Dead>)>,
+) {
+    for transform in zombies.iter() {
+        commands.spawn((
+            Transform::from_rotation(transform.rotation * Quat::from_rotation_z(PI))
+                .with_translation(transform.translation),
+            Sprite::from_image(asset_server.load("sprites/zombies/dead.png")),
+        ));
+    }
 }

@@ -3,10 +3,7 @@ use bevy_steam_p2p::{LobbyJoined, SteamP2PClient, UnhandledInstantiation};
 
 use crate::zo::car::spawn_car;
 
-use super::{
-    spawn_everything,
-    zombies::{spawn_zombie, Zombie},
-};
+use super::{spawn_everything, zombies::spawn_zombie};
 
 pub struct ZOLobbyPlugin;
 impl Plugin for ZOLobbyPlugin {
