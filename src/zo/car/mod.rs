@@ -1,6 +1,9 @@
 use avian2d::prelude::{Collider, Collision, ExternalForce, LinearVelocity, Mass, RigidBody};
 use bevy::prelude::*;
-use bevy_steam_p2p::{networked_transform::NetworkedTransform, NetworkIdentity, SteamId};
+use bevy_steam_p2p::{
+    networked_events::event::Networked, networked_transform::NetworkedTransform, NetworkIdentity,
+    SteamId,
+};
 
 use crate::{
     camera_follow::CameraFollow,
@@ -8,7 +11,11 @@ use crate::{
     utils::{query_double, query_double_mut},
 };
 
-use super::{health::Health, zombies::Zombie, Player};
+use super::{
+    health::{ChangeHealth, Health},
+    zombies::Zombie,
+    Player,
+};
 
 const TIRE_GRIP: f32 = 0.7;
 
@@ -99,7 +106,8 @@ fn drift(keys: Res<ButtonInput<KeyCode>>, mut tires: Query<&mut Tire>) {
 fn handle_collisions(
     mut collision_event_reader: EventReader<Collision>,
     mut cars: Query<(Entity, &Transform, &LinearVelocity), With<Car>>,
-    mut zombies: Query<(Entity, &Transform, &mut Health), With<Zombie>>,
+    mut zombies: Query<(&NetworkIdentity, &Transform, &mut Health), With<Zombie>>,
+    mut change_health_w: EventWriter<Networked<ChangeHealth>>,
 ) {
     let minimum_velocity = 100.;
 
@@ -119,7 +127,10 @@ fn handle_collisions(
             .xy();
         let shared_velocity = car_velocity.dot(force_dir);
         if shared_velocity > minimum_velocity {
-            zombie_health.hurt(100);
+            change_health_w.send(Networked::new(ChangeHealth {
+                network_id: zombie.id.clone(),
+                change: -100,
+            }));
         }
     }
 }

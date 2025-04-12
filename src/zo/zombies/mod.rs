@@ -247,7 +247,9 @@ fn handle_zombie_death(
     asset_server: Res<AssetServer>,
     zombies: Query<&Transform, (With<Zombie>, With<Dead>)>,
 ) {
-    for transform in zombies.iter() {
-        let _ = client.instantiate(FilePath("ZombieCorpse".to_owned()), None, *transform);
+    if client.is_lobby_owner().unwrap_or(false) {
+        for transform in zombies.iter() {
+            let _ = client.instantiate(FilePath("ZombieCorpse".to_owned()), None, *transform);
+        }
     }
 }
