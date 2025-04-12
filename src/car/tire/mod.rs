@@ -56,11 +56,11 @@ fn rolling_resistance(
             position.translation().xy(),
             gt.translation().xy(),
         );
-        gizmos.line_2d(
+        /* gizmos.line_2d(
             position.translation().xy(),
             position.translation().xy() + forcee / 10.,
             Color::srgb(0.5, 0., 0.5),
-        );
+        ); */
     }
 }
 
@@ -87,11 +87,11 @@ fn grip(
         let tire_vel = **velocity + **angular_velocity * offset.xy().perp();
         let side_force = gt.right().xy().dot(tire_vel);
         let new_force = -gt.right().xy() * side_force;
-        gizmos.line_2d(
+        /* gizmos.line_2d(
             gt.translation().xy(),
             gt.translation().xy() + new_force / 10.,
             Color::srgb(1., 0., 0.),
-        );
+        ); */
         force.apply_force_at_point(
             new_force * time.delta_secs() * 60. * tire.grip,
             gt.translation().xy(),
@@ -128,10 +128,10 @@ fn power(
             position.translation().xy(),
             gt.translation().xy(),
         );
-        gizmos.line_2d(
+        /* gizmos.line_2d(
             position.translation().xy(),
             position.translation().xy() + dir,
             Color::srgb(0., 0., 1.),
-        );
+        ); */
     }
 }
