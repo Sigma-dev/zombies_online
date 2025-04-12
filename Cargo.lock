@@ -1647,7 +1647,7 @@ dependencies = [
 [[package]]
 name = "bevy_steam_p2p"
 version = "0.1.0"
-source = "git+https://github.com/Sigma-dev/bevy_steam_p2p?branch=feat%2Fgeneric-events-sockets#51f3ba6683688a3ad7529af17fdb8b08851f3ad2"
+source = "git+https://github.com/Sigma-dev/bevy_steam_p2p?branch=feat%2Fgeneric-events-sockets#3f333ce9a3095c07bb4fc046b51d3280f9c40c7b"
 dependencies = [
  "bevy 0.15.3",
  "bevy-steamworks",

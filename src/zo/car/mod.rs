@@ -56,7 +56,7 @@ pub fn spawn_car(
         })
         .id();
 
-    if network_identity.owner_id == id {
+    if network_identity.id.owner == id {
         commands.spawn((
             Camera2d,
             Projection::from(OrthographicProjection {
