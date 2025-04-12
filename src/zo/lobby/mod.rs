@@ -1,7 +1,7 @@
 use std::f32::consts::PI;
 
 use bevy::prelude::*;
-use bevy_steam_p2p::{LobbyJoined, SteamP2PClient, UnhandledInstantiation};
+use bevy_steam_p2p::{LobbyJoined, NetworkIdentity, SteamP2PClient, UnhandledInstantiation};
 
 use crate::zo::car::spawn_car;
 
@@ -62,11 +62,13 @@ fn handle_unhandled_instantiations(
                 &mut texture_atlas_layouts,
             ),
             "ZombieCorpse" => {
+                println!("Instantiated corpse");
                 commands.spawn((
                     data.starting_transform.with_rotation(
                         data.starting_transform.rotation * Quat::from_rotation_z(PI),
                     ),
                     Sprite::from_image(asset_server.load("sprites/zombies/dead.png")),
+                    data.network_identity.clone(),
                 ));
             }
             _ => {
