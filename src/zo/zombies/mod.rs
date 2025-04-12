@@ -168,6 +168,7 @@ fn handle_zombie_agro_change(
         let Ok(mut zombie) = zombies.get_mut(zombie_entity) else {
             return;
         };
+        println!("{:?}", agro.target_identity);
         zombie.target = Some(target);
     }
 }
