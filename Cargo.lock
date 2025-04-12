@@ -729,6 +729,7 @@ dependencies = [
  "bevy_reflect 0.15.3",
  "bevy_tasks 0.15.3",
  "bevy_utils 0.15.3",
+ "serde",
  "uuid",
 ]
 
@@ -1094,6 +1095,7 @@ dependencies = [
  "bevy_reflect 0.15.3",
  "bevy_utils 0.15.3",
  "derive_more",
+ "serde",
  "smol_str",
 ]
 
@@ -1613,6 +1615,7 @@ dependencies = [
  "nonmax",
  "radsort",
  "rectangle-pack",
+ "serde",
 ]
 
 [[package]]
@@ -1644,7 +1647,7 @@ dependencies = [
 [[package]]
 name = "bevy_steam_p2p"
 version = "0.1.0"
-source = "git+https://github.com/Sigma-dev/bevy_steam_p2p?branch=feat%2Fgeneric-events-sockets#8cad88a3d8fcb051cc83c5f04e7f4108144d0159"
+source = "git+https://github.com/Sigma-dev/bevy_steam_p2p?branch=feat%2Fgeneric-events-sockets#51f3ba6683688a3ad7529af17fdb8b08851f3ad2"
 dependencies = [
  "bevy 0.15.3",
  "bevy-steamworks",
@@ -1734,6 +1737,7 @@ dependencies = [
  "bevy_reflect 0.15.3",
  "bevy_utils 0.15.3",
  "crossbeam-channel",
+ "serde",
 ]
 
 [[package]]
@@ -1762,6 +1766,7 @@ dependencies = [
  "bevy_math 0.15.3",
  "bevy_reflect 0.15.3",
  "derive_more",
+ "serde",
 ]
 
 [[package]]
@@ -1802,6 +1807,7 @@ dependencies = [
  "bytemuck",
  "derive_more",
  "nonmax",
+ "serde",
  "smallvec",
  "taffy",
 ]
@@ -1889,6 +1895,7 @@ dependencies = [
  "bevy_reflect 0.15.3",
  "bevy_utils 0.15.3",
  "raw-window-handle",
+ "serde",
  "smol_str",
 ]
 
@@ -1947,6 +1954,7 @@ dependencies = [
  "cfg-if",
  "crossbeam-channel",
  "raw-window-handle",
+ "serde",
  "wasm-bindgen",
  "web-sys",
  "wgpu-types 23.0.0",
@@ -2131,9 +2139,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.18"
+version = "1.2.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "525046617d8376e3db1deffb079e91cef90a89fc3ca5c185bbf8c9ecdd15cd5c"
+checksum = "8e3a13707ac958681c13b39b458c073d0d9bc8a22cb1b2f4c8e55eb72c13f362"
 dependencies = [
  "jobserver",
  "libc",
@@ -2453,9 +2461,9 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-channel"
-version = "0.5.14"
+version = "0.5.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "06ba6d68e24814cb8de6bb986db8222d3a027d15872cabc0d18817bc3c0e4471"
+checksum = "82b8f8f868b36967f9606790d1903570de9ceaf870a7bf9fbbd3016d636a2cb2"
 dependencies = [
  "crossbeam-utils",
 ]
@@ -2526,9 +2534,9 @@ checksum = "0c87e182de0887fd5361989c677c4e8f5000cd9491d6d563161a8f3a5519fc7f"
 
 [[package]]
 name = "data-encoding"
-version = "2.8.0"
+version = "2.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "575f75dfd25738df5b91b8e43e14d44bda14637a58fae779fd2b064f8bf3e010"
+checksum = "2a2330da5de22e8a3cb63252ce2abb30116bf5265e89c0e01bc17015ce30a476"
 
 [[package]]
 name = "derive_more"
@@ -5148,9 +5156,9 @@ dependencies = [
 
 [[package]]
 name = "self_cell"
-version = "1.1.0"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2fdfc24bc566f839a2da4c4295b82db7d25a24253867d5c64355abb5799bdbe"
+checksum = "0f7d95a54511e0c7be3f51e8867aa8cf35148d7b9445d44de2f943e2b206e749"
 
 [[package]]
 name = "send_wrapper"
@@ -5257,6 +5265,9 @@ name = "smallvec"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8917285742e9f3e1683f0a9c4e6b57960b7314d0b08d30d1ecd426713ee2eee9"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "smithay-client-toolkit"
@@ -6950,9 +6961,9 @@ checksum = "b9cc00251562a284751c9973bace760d86c0276c471b4be569fe6b068ee97a56"
 
 [[package]]
 name = "xml-rs"
-version = "0.8.25"
+version = "0.8.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5b940ebc25896e71dd073bad2dbaa2abfe97b0a391415e22ad1326d9c54e3c4"
+checksum = "a62ce76d9b56901b19a74f19431b0d8b3bc7ca4ad685a746dfd78ca8f4fc6bda"
 
 [[package]]
 name = "yazi"

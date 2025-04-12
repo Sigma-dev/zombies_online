@@ -32,7 +32,7 @@ pub fn spawn_everything(
     mut client: ResMut<SteamP2PClient>,
 ) {
     client
-        .instantiate(FilePath::new("Player"), None, Vec3::ZERO)
+        .instantiate(FilePath::new("Player"), None, Transform::default())
         .expect("Couldn't spawn player");
 
     spawn_world(&mut commands, &asset_server);

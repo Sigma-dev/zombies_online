@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::prelude::*;
 use bevy_steam_p2p::{LobbyJoined, SteamP2PClient, UnhandledInstantiation};
 
@@ -53,12 +55,20 @@ fn handle_unhandled_instantiations(
                 );
             }
             "Zombie" => spawn_zombie(
-                data.starting_pos.xy(),
+                data.starting_transform,
                 &mut commands,
                 &asset_server,
                 data.network_identity.clone(),
                 &mut texture_atlas_layouts,
             ),
+            "ZombieCorpse" => {
+                commands.spawn((
+                    data.starting_transform.with_rotation(
+                        data.starting_transform.rotation * Quat::from_rotation_z(PI),
+                    ),
+                    Sprite::from_image(asset_server.load("sprites/zombies/dead.png")),
+                ));
+            }
             _ => {
                 println!("No valid instantiation candidate found");
             }

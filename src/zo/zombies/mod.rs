@@ -96,7 +96,12 @@ fn handle_spawning_and_despawning(
         if shape_cast.is_some() {
             continue;
         };
-        let _ = client.instantiate(FilePath("Zombie".to_owned()), None, sample_point.extend(0.));
+        let _ = client.instantiate(
+            FilePath("Zombie".to_owned()),
+            None,
+            Transform::from_translation(sample_point.extend(0.))
+                .with_rotation(Quat::from_rotation_z(random_float(0.0..(2. * PI)))),
+        );
     }
 
     for (zombie, _) in zombies.iter() {
@@ -205,7 +210,7 @@ pub fn look_at_2d(transform: &mut Transform, target: Vec2) {
 }
 
 pub fn spawn_zombie(
-    position: Vec2,
+    transform: Transform,
     commands: &mut Commands,
     asset_server: &AssetServer,
     network_identity: NetworkIdentity,
@@ -220,8 +225,7 @@ pub fn spawn_zombie(
             speed: 20000.,
             target: None,
         },
-        Transform::from_translation(position.extend(0.))
-            .with_rotation(Quat::from_rotation_z(random_float(0.0..(2. * PI)))),
+        transform,
         RigidBody::Dynamic,
         Mass(0.1),
         Collider::circle(4.),
@@ -238,15 +242,11 @@ pub fn spawn_zombie(
 }
 
 fn handle_zombie_death(
-    mut commands: Commands,
+    mut client: ResMut<SteamP2PClient>,
     asset_server: Res<AssetServer>,
     zombies: Query<&Transform, (With<Zombie>, With<Dead>)>,
 ) {
     for transform in zombies.iter() {
-        commands.spawn((
-            Transform::from_rotation(transform.rotation * Quat::from_rotation_z(PI))
-                .with_translation(transform.translation),
-            Sprite::from_image(asset_server.load("sprites/zombies/dead.png")),
-        ));
+        let _ = client.instantiate(FilePath("ZombieCorpse".to_owned()), None, *transform);
     }
 }
